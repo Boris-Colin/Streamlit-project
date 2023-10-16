@@ -7,6 +7,7 @@ import seaborn as sns
 st.set_page_config(page_title="My first dashboard with streamlit", initial_sidebar_state='expanded')
 #Ensures the sidebar is visible in the beginning
 #since this function could only be ran once, I had to put it here
+image_url = 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/91/Logo_Efrei_2022.svg/2560px-Logo_Efrei_2022.svg.png'
 weekday_mapping = {
     0: 'Monday',
     1: 'Tuesday',
@@ -30,6 +31,11 @@ month_mapping = {
     11: 'November',
     12: 'December'
 }
+links = {
+    "My Linkedin": "https://www.linkedin.com/in/boris-colin2022/",
+    "My Github": "https://github.com/Boris-Colin",
+}
+
 def get_weekday(dt):
     return dt.weekday()
 def get_month(dt):
@@ -74,7 +80,7 @@ def load_and_clean_data(file_path):
 def main():
     st.title('My Speed Record Dashboard')
     st.subheader("This is the display of the values")
-    st.write("This is my dashboard based on recorded speed in france. Please wait a moment, data is being cleaned up.")
+    st.write("This is my dashboard based on car recorded speed in france.")
 
 
     st.sidebar.header('Dashboard `version 1`')
@@ -105,10 +111,13 @@ def main():
 
     st.sidebar.markdown('''
     ---
-    Boris Colin
+    Boris Colin #Dataviz2023
     ''')
+    for name, url in links.items():
+        st.sidebar.markdown(f'<a href="{url}" target="_blank">{name}</a>', unsafe_allow_html=True)
+    st.sidebar.image(image_url, use_column_width=True)
     # Display data overview
-    st.markdown('##Data Preview:')
+    st.subheader('Data Preview:')
     st.dataframe(filtered_vit.describe())
 
     # Row A
@@ -131,6 +140,13 @@ def main():
         fig2 = px.pie(filtered_vit, names=pie_chart_param)
         st.plotly_chart(fig2)
 
+    st.markdown("As we can see through both heatmaps and piecharts, most infractions happen in the middle "
+                "of the week either at the beginning or the end of the workday."
+                "Contrary to what I expected, there are fewer infraction during the weekend, and more right before."
+                "My guess is that people hurry back from work after the week."
+                "Then, we get to observe something most interesting: save for one month, the number of infraction"
+                "only increases each month. Although this could be due to the fact that the whole dataset takes place"
+                "in 2021, right after covid, and circulation gradually came back to normal levels.")
 
     # Row C
     st.markdown('### Line chart')
@@ -155,15 +171,20 @@ def main():
 
 
     # Row D
-    st.markdown('##Data Visualization:')
+    st.subheader('Data Visualization:')
     fig, ax = plt.subplots()
     ax.hist(filtered_vit['difference'], bins=60, alpha=0.5, color='b')
     ax.set_xlabel('Difference')
     ax.set_ylabel('Frequency')
     st.pyplot(fig)
+    st.markdown("We can see that most infraction are hardly severe. Most drivers get close to the speed limit, and "
+                "go abose it by a few kilometers per hour. However, there are a few cases of severe violation, the"
+                "record here being going 139 km per hour over the limit.")
 
-    st.markdown('###Map:')
-    st.map(valid_data[['latitude', 'longitude']]) 
+    st.subheader('Map:')
+    st.map(valid_data[['latitude', 'longitude']])
+    st.markdown("We can see on this interactive map, that we have almost no data in the south-east of France. The "
+                "reason for that isn't specified in the original dataset")
 
 
     filtered_data2 = valid_data[valid_data['limite'] == user_limit]
@@ -178,6 +199,13 @@ def main():
                        labels={'difference': 'Difference'},
                        title=f"Histogram of 'count' over 'difference' with limit {user_limit}")
     st.plotly_chart(fig)
+    st.markdown("When doing these two plots, I was wondering whether people were wore likely to go over the limit if"
+                "it was low, and in that case, would the infraction be more severe. "
+                "It appears that there are few infractions at a limit of 50, but conversely they are sevevere. In "
+                "contrast, most infractions are commited when the limit is at 90, but the infractions are minor. It"
+                "seems likely that there are few infractions on the highway or when it rains (110), since people "
+                "either don't want to pay, or are genrally aware that going over the limit is very dangerous when it"
+                "rains")
 
 if __name__ == "__main__":
     filtered_vit, df2, valid_data, df3 = load_and_clean_data("C:/Users/1thom/Downloads/opendata-vitesse-2021-01-01-2021-12-31.csv")
